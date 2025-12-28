@@ -5,105 +5,157 @@
 <title>Elvenor ✨ Thank You</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- Allura Font -->
+<link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
+
 <style>
 body {
   margin: 0;
-  background: radial-gradient(circle at top, #111, #000);
   height: 100vh;
   overflow: hidden;
+  background: #0f1f1c;
+  transition: background 0.6s ease;
   font-family: 'Georgia', serif;
-  color: #fff;
 }
 
 /* Sparkles */
 .sparkle {
   position: absolute;
-  width: 6px;
-  height: 6px;
-  background: rgba(255,215,170,0.9);
-  border-radius: 50%;
-  animation: twinkle 2.5s infinite ease-in-out,
-             spin 6s infinite linear;
+  font-size: 20px;
+  color: #f6d27a;
+  opacity: 0;
+  animation: sparkleFloat 4s ease-in-out infinite;
+  pointer-events: none;
 }
 
-@keyframes twinkle {
-  0%,100% { opacity: 0.2; transform: scale(0.6); }
-  50% { opacity: 1; transform: scale(1); }
+@keyframes sparkleFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px) scale(1.2) rotate(20deg);
+  }
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg) translateX(40px); }
-  to { transform: rotate(360deg) translateX(40px); }
-}
-
-/* Main content */
-#content {
-  display: none;
-  text-align: center;
+/* Layout */
+.container {
   position: absolute;
-  top: 50%;
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
+  color: #fff;
 }
 
+/* Logo */
 .logo {
-  font-size: 42px;
-  font-style: italic;
-  letter-spacing: 1px;
+  font-family: 'Allura', cursive;
+  font-size: 54px;
+  text-align: center;
+  background: linear-gradient(45deg,#f7e7b4,#d4af37,#fff1a8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: goldShine 3s infinite linear;
 }
 
+@keyframes goldShine {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.4); }
+  100% { filter: brightness(1); }
+}
+
+/* Thank You */
 .thankyou {
-  margin-top: 14px;
-  font-size: 16px;
-  opacity: 0.9;
+  margin-top: 25px;
+  font-family: 'Allura', cursive;
+  font-size: 26px;
+  text-align: center;
+  opacity: 0.95;
+}
+
+/* Instagram Button */
+.insta-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
 }
 
 .insta-btn {
-  margin-top: 25px;
-  padding: 12px 26px;
+  padding: 10px 22px;
   border-radius: 30px;
   background: linear-gradient(45deg,#f7c59f,#e09f7d);
   color: #000;
   text-decoration: none;
   font-weight: bold;
-  display: inline-block;
+  font-size: 14px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- Sparkles -->
-<script>
-for (let i = 0; i < 35; i++) {
-  const s = document.createElement('div');
-  s.className = 'sparkle';
-  s.style.top = Math.random() * 100 + '%';
-  s.style.left = Math.random() * 100 + '%';
-  s.style.animationDelay = Math.random() * 3 + 's';
-  document.body.appendChild(s);
-}
-
-setTimeout(() => {
-  document.querySelectorAll('.sparkle').forEach(e => e.style.display='none');
-  document.getElementById('content').style.display='block';
-}, 3500);
-</script>
-
-<!-- Final Reveal -->
-<div id="content">
+<div class="container">
   <div class="logo">Elvenor</div>
+
   <div class="thankyou">
-    Thank you for choosing us 🤍<br>
+    Thank you for choosing us ✨<br>
     Your sparkle means everything.
   </div>
 
-  <a class="insta-btn"
-     href="https://instagram.com/YOURINSTAGRAM"
-     target="_blank">
-    ✨ Share your sparkle on Instagram
-  </a>
+  <div class="insta-wrap">
+    <a class="insta-btn"
+       href="https://instagram.com/elvenor.store"
+       target="_blank">
+      ✨ Visit Instagram
+    </a>
+  </div>
 </div>
 
+<script>
+// Sparkles (WhatsApp-style)
+const sparkleChars = ['✨','✦','✧','✺','✩'];
+
+function createSparkle() {
+  const s = document.createElement('div');
+  s.className = 'sparkle';
+  s.innerText = sparkleChars[Math.floor(Math.random()*sparkleChars.length)];
+  s.style.left = Math.random() * 100 + 'vw';
+  s.style.top = Math.random() * 100 + 'vh';
+  s.style.animationDuration = (3 + Math.random()*2) + 's';
+  document.body.appendChild(s);
+
+  setTimeout(() => s.remove(), 4000);
+}
+
+setInterval(createSparkle, 180);
+
+// Background colors (luxury dark palette)
+const colors = [
+  '#0f1f1c', // sea green dark
+  '#0c1a24', // sea blue
+  '#2b0f14', // blood red
+  '#0e2a1f', // emerald dark
+  '#2a0b18', // ruby dark
+  '#0a1f2b', // deep ocean blue
+  '#1b2a1b', // forest green
+  '#1e1b2a', // night violet
+  '#1a2421', // graphite green
+  '#f7eef6', // soft blush
+  '#adbbcb', // muted sage
+  '#141414'  // luxury black
+];
+
+document.body.addEventListener('click', () => {
+  document.body.style.background =
+    colors[Math.floor(Math.random()*colors.length)];
+});
+</script>
+
 </body>
-</html>
+</html></html>
