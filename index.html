@@ -13,47 +13,117 @@ body {
   margin: 0;
   height: 100vh;
   overflow: hidden;
-  background: #0f1f1c;
-  transition: background 0.6s ease;
+  transition: background 1s ease;
   font-family: 'Georgia', serif;
 }
 
-/* Sparkles */
-.sparkle {
-  position: absolute;
-  font-size: 20px;
-  color: #f6d27a;
-  opacity: 0;
-  animation: sparkleFloat 4s ease-in-out infinite;
-  pointer-events: none;
+/* Background colors (random on load) */
+</style>
+</head>
+<body>
+
+<div class="container" style="opacity:0;">
+  <div class="logo">Elvenor</div>
+  <div class="thankyou">
+    Thank you for choosing us ✨<br>
+    Your sparkle means everything.
+  </div>
+  <div class="insta-wrap">
+    <a class="insta-btn" href="https://instagram.com/elvenor.store" target="_blank">
+      ✨ Tag us & drop a review
+    </a>
+  </div>
+</div>
+
+<script>
+// ------------------ CONFIG ------------------
+
+// Background color palette
+const colors = [
+  '#0f1f1c','#0c1a24','#2b0f14','#0e2a1f','#2a0b18','#0a1f2b',
+  '#1b2a1b','#1e1b2a','#1a2421','#f7eef6','#adbbcb','#141414'
+];
+
+// Random background on load
+document.body.style.background = colors[Math.floor(Math.random()*colors.length)];
+
+// Halo sparkle config
+const sparkleChars = ['✨','✦','✧','✺','✩'];
+const haloRadius = 120; // distance from center
+const haloCount = 25; // number of halo sparkles
+const haloDuration = 3500; // ms before reveal
+
+const centerX = window.innerWidth/2;
+const centerY = window.innerHeight*0.35; // logo slightly above center
+
+let haloElements = [];
+
+// Create halo sparkles
+for(let i=0;i<haloCount;i++){
+  const s = document.createElement('div');
+  s.className='sparkle';
+  s.innerText = sparkleChars[Math.floor(Math.random()*sparkleChars.length)];
+  s.style.position='absolute';
+  s.style.fontSize = (16 + Math.random()*8)+'px';
+  s.style.color = '#f6d27a';
+  document.body.appendChild(s);
+  haloElements.push(s);
 }
 
-@keyframes sparkleFloat {
-  0% {
-    opacity: 0;
-    transform: translateY(0) scale(0.6);
-  }
-  30% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-60px) scale(1.2) rotate(20deg);
+// Animate halo spin (latitude motion)
+let startTime = null;
+function animateHalo(timestamp){
+  if(!startTime) startTime = timestamp;
+  const elapsed = timestamp - startTime;
+  const angleOffset = (elapsed/haloDuration)*2*Math.PI;
+
+  haloElements.forEach((s,i)=>{
+    const angle = (i/haloCount)*2*Math.PI + angleOffset;
+    const latitude = Math.sin(angle*3)*0.3; // subtle latitude wobble
+    s.style.left = (centerX + haloRadius*Math.cos(angle)*1.2) + 'px';
+    s.style.top = (centerY + haloRadius*Math.sin(angle)*0.8) + 'px';
+    s.style.opacity = 0.8 + 0.2*Math.sin(angle*5 + elapsed/200);
+  });
+
+  if(elapsed < haloDuration){
+    requestAnimationFrame(animateHalo);
+  }else{
+    // remove halo sparkles
+    haloElements.forEach(s=>s.remove());
+    // show content
+    document.querySelector('.container').style.opacity = 1;
+    startLogoSparkle();
   }
 }
+requestAnimationFrame(animateHalo);
 
-/* Layout */
+// Logo sparkle after reveal
+function startLogoSparkle(){
+  const logo = document.querySelector('.logo');
+  setInterval(()=>{
+    const intensity = 0.7 + Math.random()*0.3;
+    logo.style.filter = `drop-shadow(0 0 ${5+Math.random()*5}px gold) brightness(${intensity+0.5})`;
+  }, 250);
+  // Insta button glow
+  const btn = document.querySelector('.insta-btn');
+  btn.style.transition = '0.6s';
+  setInterval(()=>{
+    btn.style.boxShadow = `0 0 ${5+Math.random()*8}px #f7c59f, 0 0 ${5+Math.random()*8}px #e09f7d`;
+  }, 400);
+}
+
+// Style content dynamically
+const style = document.createElement('style');
+style.innerHTML = `
 .container {
   position: absolute;
-  top: 45%;
+  top: 35%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: 400px;
+  text-align: center;
   color: #fff;
 }
 
-/* Logo */
 .logo {
   font-family: 'Allura', cursive;
   font-size: 54px;
@@ -61,16 +131,8 @@ body {
   background: linear-gradient(45deg,#f7e7b4,#d4af37,#fff1a8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: goldShine 3s infinite linear;
 }
 
-@keyframes goldShine {
-  0% { filter: brightness(1); }
-  50% { filter: brightness(1.4); }
-  100% { filter: brightness(1); }
-}
-
-/* Thank You */
 .thankyou {
   margin-top: 25px;
   font-family: 'Allura', cursive;
@@ -79,7 +141,6 @@ body {
   opacity: 0.95;
 }
 
-/* Instagram Button */
 .insta-wrap {
   display: flex;
   justify-content: flex-end;
@@ -89,29 +150,19 @@ body {
 .insta-btn {
   padding: 10px 22px;
   border-radius: 30px;
-  background: linear-gradient(45deg,#f7c59f,#e09f7d);
-  color: #000;
+  background: transparent;
+  border: 2px solid #f7c59f;
+  color: #f7c59f;
   text-decoration: none;
   font-weight: bold;
   font-size: 14px;
+  text-shadow: 0 0 3px gold;
 }
-</style>
-</head>
-
-<body>
-
-<div class="container">
-  <div class="logo">Elvenor</div>
-
-  <div class="thankyou">
-    Thank you for choosing us ✨<br>
-    Your sparkle means everything.
-  </div>
-
-  <div class="insta-wrap">
-    <a class="insta-btn"
-       href="https://instagram.com/elvenor.store"
-       target="_blank">
+`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>       target="_blank">
       ✨ Visit Instagram
     </a>
   </div>
@@ -159,3 +210,4 @@ document.body.addEventListener('click', () => {
 
 </body>
 </html></html>
+
