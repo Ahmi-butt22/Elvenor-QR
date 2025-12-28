@@ -17,6 +17,18 @@ body {
   transition: background 1s ease;
 }
 
+/* Container for positioning */
+.container {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
 /* Logo styling */
 .logo {
   font-family: 'Allura', cursive;
@@ -46,8 +58,8 @@ body {
   font-family: 'Georgia', serif;
   font-size: 24px;
   text-align: center;
-  opacity: 0.95;
   margin-top: 10px;
+  opacity: 0.95;
 }
 
 /* Instagram button */
@@ -85,24 +97,14 @@ body {
   30% { opacity: 1; }
   100% { opacity: 0; transform: translateY(-60px) scale(1.2) rotate(20deg); }
 }
-
-/* Container for positioning */
-.container {
-  position: absolute;
-  top: 20%; /* logo moved higher */
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  color: #fff;
-}
 </style>
 </head>
 
 <body>
 
-<div class="container" style="opacity:0;">
-  <div class="logo">Elvenor ♥️ ♥️</div>
-  <div class="thankyou">Thank you for choosing us, your sparkle means everything</div>
+<div class="container">
+  <div class="logo">Elvenor</div>
+  <div class="thankyou">Thank you for shopping with us ♥️, your sparkle means everything ✨🌙</div>
   <div class="insta-wrap">
     <a class="insta-btn" href="https://instagram.com/elvenor.store" target="_blank">
       Tag us & drop a review
@@ -111,7 +113,81 @@ body {
 </div>
 
 <script>
-// ------------------ CONFIG ------------------
+// ---------------- CONFIG ----------------
+
+// Background colors
+const colors = [
+  '#f7eef6','#adbbcb','#f2d7d5','#cfe2f3','#d8f3dc',
+  '#ffe5d9','#e0bbe4','#d0f4de','#f7cac9','#f9e79f',
+  '#e8daef','#c5dedd'
+];
+
+// Random background on load
+document.body.style.background = colors[Math.floor(Math.random()*colors.length)];
+
+// Sparkle stars
+const sparkleChars = ['✨','✦','✧','✩'];
+
+// Halo spin before reveal
+const haloRadius = 120; 
+const haloCount = 25; 
+const haloDuration = 3500; 
+const centerX = window.innerWidth/2;
+const centerY = window.innerHeight*0.2; // logo higher
+
+let haloElements = [];
+for(let i=0;i<haloCount;i++){
+  const s = document.createElement('div');
+  s.className='sparkle';
+  s.innerText = sparkleChars[Math.floor(Math.random()*sparkleChars.length)];
+  s.style.fontSize = (16 + Math.random()*8)+'px';
+  document.body.appendChild(s);
+  haloElements.push(s);
+}
+
+// Animate halo spin
+let startTime = null;
+function animateHalo(timestamp){
+  if(!startTime) startTime = timestamp;
+  const elapsed = timestamp - startTime;
+  const angleOffset = (elapsed/haloDuration)*2*Math.PI;
+
+  haloElements.forEach((s,i)=>{
+    const angle = (i/haloCount)*2*Math.PI + angleOffset;
+    s.style.left = (centerX + haloRadius*Math.cos(angle)*1.2) + 'px';
+    s.style.top = (centerY + haloRadius*Math.sin(angle)*0.8) + 'px';
+    s.style.opacity = 0.8 + 0.2*Math.sin(angle*5 + elapsed/200);
+  });
+
+  if(elapsed < haloDuration){
+    requestAnimationFrame(animateHalo);
+  } else {
+    haloElements.forEach(s=>s.remove());
+    // show container
+    document.querySelector('.container').style.opacity = 1;
+    startBackgroundSparkles();
+  }
+}
+requestAnimationFrame(animateHalo);
+
+// Continuous random sparkles after reveal
+function startBackgroundSparkles(){
+  function createRandomSparkle(){
+    const s = document.createElement('div');
+    s.className='sparkle';
+    s.innerText = sparkleChars[Math.floor(Math.random()*sparkleChars.length)];
+    s.style.left = Math.random()*100 + 'vw';
+    s.style.top = Math.random()*100 + 'vh';
+    s.style.fontSize = (14 + Math.random()*10)+'px';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(), 4000);
+  }
+  setInterval(createRandomSparkle, 180);
+}
+
+</script>
+</body>
+</html>// ------------------ CONFIG ------------------
 
 // Background colors
 const colors = [
@@ -234,6 +310,7 @@ document.body.addEventListener('click', () => {
 
 </body>
 </html></html>
+
 
 
 
