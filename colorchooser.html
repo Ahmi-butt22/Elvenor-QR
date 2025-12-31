@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Elvenor Hue-Grouped Palette</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #000;
+  color: #ccc;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+h1 { text-align:center; margin-bottom:20px; }
+
+.controls {
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.controls input[type="text"], .controls input[type="color"] {
+  padding: 10px;
+  font-size: 14px;
+  width: 180px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+.controls button {
+  padding: 10px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  background: #222;
+  color: #fff;
+}
+
+.color-container {
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  margin-top: 20px;
+  margin-bottom: 20px; /* reduced empty space */
+}
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 30px;
+}
+
+.color-box {
+  height: 286px;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 10px;
+}
+.color-box span {
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: bold;
+}
+
+.delete-btn {
+  position: absolute;
+  top:5px;
+  right:5px;
+  background:#440000;
+  color:#fff;
+  border:none;
+  border-radius:50%;
+  width:22px;
+  height:22px;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.preview-menu {
+  position: absolute;
+  background: #111;
+  color:#ccc;
+  padding:12px 18px;
+  border-radius:5px;
+  display:none;
+  z-index:100;
+  flex-direction: column;
+}
+.preview-menu button {
+  margin:5px 0;
+  padding:10px 16px;
+  font-size:16px;
+  background:#222;
+  color:#ccc;
+  border:none;
+  cursor:pointer;
+  border-radius:4px;
+}
+
+.overlay {
+  position: fixed;
+  top:0; left:0;
+  width:100vw;
+  height:100vh;
+  display:none;
+  justify-content: center;
+  align-items: center;
+  z-index:1000;
+  background: rgba(0,0,0,0.95);
+  overflow: auto;
+  flex-direction: column;
+  padding:0;
+}
+.overlay .cross {
+  position: absolute;
+  top:5px;
+  left:20px;
+  font-size:50px;
+  font-weight:bold;
+  color:#ccc;
+  cursor:pointer;
+  z-index:1010;
+}
+.overlay .grid {
+  display: grid;
+  gap:0;
+  width:100vw;
+  height:100vh;
+  margin:0;
+  padding:0;
+}
+.overlay .grid > div {
+  display:flex;
+  flex-direction: column;
+  justify-content:center;
+  align-items:center;
+  font-size:22px;
+  text-align:center;
+  border-radius:0;
+  width:100%;
+  height:100%;
+}
+.overlay .grid .name {
+  font-size:25px;
+}
+</style>
+</head>
+<body>
+
+<h1>Elvenor Hue-Grouped Palette</h1>
+
+<div class="controls">
+  <input type="text" id="newColor" placeholder="#hexcode">
+  <button id="addColor">Add Hex</button>
+  <input type="color" id="picker">
+  <button id="addPickedColor">Add Picked Color</button>
+  <button id="previewSelection">Preview Selection</button>
+</div>
+
+<div class="color-container">
+  <div class="color-grid" id="palette"></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="cross" id="closeBtn">&times;</div>
+  <div class="grid" id="previewGrid"></div>
+</div>
+
+<script>
+function hexToHSL(H) {
+    let r=0,g=0,b=0;
+    if(H.length==7){r=parseInt(H.substring(1,3),16)/255;
+    g=parseInt(H.substring(3,5),16)/255;
+    b=parseInt(H.substring(5,7),16)/255;}
+    let cmin=Math.min(r,g,b),cmax=Math.max(r,g,b),delta=cmax-cmin,h=0,s=0,l=0;
+    l=(cmax+cmin)/2;
+    if(delta==0) h=0;
+    else if(cmax==r) h=((g-b)/delta)%6;
+    else if(cmax==g) h=((b-r)/delta)+2;
+    else h=((r-g)/delta)+4;
+    h=Math.round(h*60); if(h<0)h+=360;
+    s=delta==0?0:delta/(1-Math.abs(2*l-1));
+    s=+(s*100).toFixed(1);
+    l=+(l*100).toFixed(1);
+    return {h,s,l};
+}
+
+let defaultColors=[
+  {hex:'#450027', name:'Rich Dark Burgundy'},
+  {hex:'#4d062c', name:'Crimson Wine'},
+  {hex:'#36001e', name:'Dark Mulberry'},
+  {hex:'#32001c', name:'Shadow Mulberry'},
+  {hex:'#240134', name:'Royal Aubergine'},
+  {hex:'#1E0011', name:'Black Cherry Wine'},
+  {hex:'#1e0713', name:'Deep Oxblood'},
+  {hex:'#1c0621', name:'Plum Noir'},
+  {hex:'#16174d', name:'Royal Midnight Blue'},
+  {hex:'#080b38', name:'Deep Indigo Night'},
+  {hex:'#030A1C', name:'Midnight Ink'},
+  {hex:'#00001c', name:'Absolute Navy'},
+  {hex:'#1a4a4f', name:'Deep Teal Ocean'},
+  {hex:'#163832', name:'Forest Teal'},
+  {hex:'#002426', name:'Deep Sea Green'},
+  {hex:'#001e1e', name:'Abyss Teal'},
+  {hex:'#051f20', name:'Blackened Teal'},
+  {hex:'#001e17', name:'Emerald Shadow'},
+  {hex:'#021e13', name:'Dark Moss Green'},
+  {hex:'#091712', name:'Pine Night'},
+  {hex:'#1E3130', name:'Dark Petrol Teal'},
+  {hex:'#0c0807', name:'Charcoal Cocoa'},
+  {hex:'#000e01', name:'Black Forest'},
+  {hex:'#002438', name:'Deep Slate Blue'},
+  {hex:'#1a2f3b', name:'Storm Blue Grey'}
+];
+
+let paletteColors=JSON.parse(localStorage.getItem('elvenorColors'))||defaultColors;
+let deletedColors=JSON.parse(localStorage.getItem('elvenorDeleted'))||[];
+paletteColors=paletteColors.filter(c=>!deletedColors.includes(c.hex));
+paletteColors = groupAndSort(paletteColors);
+
+const paletteDiv=document.getElementById('palette');
+const overlay=document.getElementById('overlay');
+const previewGrid=document.getElementById('previewGrid');
+const closeBtn=document.getElementById('closeBtn');
+const newColorInput=document.getElementById('newColor');
+const addColorBtn=document.getElementById('addColor');
+const previewSelectionBtn=document.getElementById('previewSelection');
+const picker=document.getElementById('picker');
+const addPickedColorBtn=document.getElementById('addPickedColor');
+
+let selectedColors=[];
+
+function saveColors(){
+  localStorage.setItem('elvenorColors',JSON.stringify(paletteColors));
+  localStorage.setItem('elvenorDeleted',JSON.stringify(deletedColors));
+}
+
+function groupAndSort(colors){
+  colors.forEach(c=>c.hsl=hexToHSL(c.hex));
+  // Sort by hue ascending, then lightness descending (light->dark)
+  colors.sort((a,b)=>{
+    if(a.hsl.h!=b.hsl.h) return a.hsl.h-b.h;
+    return b.hsl.l-a.hsl.l;
+  });
+  return colors;
+}
+
+function getTextColor(hex){
+  let c=hex.substring(1);
+  let rgb=parseInt(c,16);
+  let r=(rgb>>16)&255;
+  let g=(rgb>>8)&255;
+  let b=rgb&255;
+  return (r*0.299+g*0.587+b*0.114)>186?'#000':'#fff';
+}
+
+function renderPalette(){
+  paletteColors = groupAndSort(paletteColors); // force sort
+  paletteDiv.innerHTML='';
+  paletteColors.forEach(c=>{
+    const box=document.createElement('div');
+    box.className='color-box';
+    box.style.background=c.hex;
+    let textColor=getTextColor(c.hex);
+    box.innerHTML=`<span style="color:${textColor}">${c.name}<br>${c.hex}</span>`;
+
+    const delBtn=document.createElement('button');
+    delBtn.className='delete-btn';
+    delBtn.innerText='×';
+    delBtn.onclick=(e)=>{
+      e.stopPropagation();
+      deletedColors.push(c.hex);
+      paletteColors = paletteColors.filter(p=>p.hex!==c.hex);
+      saveColors();
+      renderPalette();
+    };
+    box.appendChild(delBtn);
+
+    box.addEventListener('click', ()=>{
+      showPreviewMenu(box,c);
+    });
+
+    paletteDiv.appendChild(box);
+  });
+}
+
+function showPreviewMenu(box,color){
+  let menu=document.createElement('div');
+  menu.className='preview-menu';
+  menu.innerHTML=`
+    <button id="previewAlone">Preview Alone</button>
+    <button id="addSelection">Add to Selection</button>
+  `;
+  box.appendChild(menu);
+  menu.style.display='flex';
+
+  menu.querySelector('#previewAlone').onclick=()=>{
+    selectedColors=[color];
+    renderPreview();
+    menu.remove();
+  }
+
+  menu.querySelector('#addSelection').onclick=()=>{
+    if(!selectedColors.find(c=>c.hex===color.hex)){
+      selectedColors.push(color);
+      alert(`Color ${color.hex} added to selection.`);
+    }
+    menu.remove();
+  }
+
+  document.addEventListener('click', function removeMenu(e){
+    if(!box.contains(e.target)){
+      menu.remove();
+      document.removeEventListener('click', removeMenu);
+    }
+  });
+}
+
+function renderPreview(){
+  overlay.style.display='flex';
+  previewGrid.innerHTML='';
+
+  let n=selectedColors.length;
+  let cols=Math.ceil(Math.sqrt(n));
+  let rows=Math.ceil(n/cols);
+
+  previewGrid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  previewGrid.style.gridTemplateRows=`repeat(${rows},1fr)`;
+
+  selectedColors.forEach(c=>{
+    const div=document.createElement('div');
+    div.style.background=c.hex;
+    let textColor=getTextColor(c.hex);
+    div.style.color=textColor;
+    div.innerHTML=`<div class="name">${c.hex}</div>`;
+    previewGrid.appendChild(div);
+  });
+}
+
+closeBtn.onclick=()=>{
+  overlay.style.display='none';
+  previewGrid.innerHTML='';
+  selectedColors=[];
+}
+
+addColorBtn.onclick=async ()=>{
+  let hex=newColorInput.value.trim();
+  await addNewColor(hex);
+  newColorInput.value='';
+}
+
+addPickedColorBtn.onclick=async ()=>{
+  let hex=picker.value;
+  await addNewColor(hex);
+}
+
+async function addNewColor(hex){
+  if(/^#([0-9A-Fa-f]{6})$/.test(hex)){
+    if(deletedColors.includes(hex)){
+      deletedColors=deletedColors.filter(d=>d!==hex);
+    }
+    try{
+      const res=await fetch(`https://www.thecolorapi.com/id?hex=${hex.slice(1)}`);
+      const data=await res.json();
+      paletteColors.push({hex:hex,name:data.name.value});
+    }catch(err){
+      paletteColors.push({hex:hex,name:hex});
+    }
+    saveColors();
+    renderPalette();
+  }else alert('Enter a valid hex color (#RRGGBB)');
+}
+
+previewSelectionBtn.onclick=()=>{
+  if(selectedColors.length>0){
+    renderPreview();
+  } else alert('No colors selected!');
+}
+
+renderPalette();
+</script>
+</body>
+</html>
